@@ -6,7 +6,7 @@ client.connect(6379, '127.0.0.1', () => {
     console.log('Connected to Redis Lite server');
 
     // Send commands to the server
-    client.write(serializeRequest('PING'));
+    client.write(serializeRequest('Hello World'));
 
     // You can send more commands here, e.g., client.write(serializeRequest('GET key'));
 

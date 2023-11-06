@@ -19,14 +19,14 @@ const server = net.createServer((client) => {
 });
 
 server.listen(6379, '0.0.0.0', () => {
-    console.log('Redis Lite server is running on port 6379');
+    console.log('Echo Server is running on port 6379');
 });
 
 function processRequest(request) {
     const deserializedRequest = deserializeRESP(request);
 
-    if (deserializedRequest === 'PING') {
-        return serializeRESP('PONG');
+    if (deserializedRequest) {
+        return serializeRESP(deserializedRequest);
     } else {
         return serializeRESP('-Error: Unsupported command\r\n');
     }
