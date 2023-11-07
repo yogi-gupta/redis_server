@@ -3,20 +3,19 @@ const net = require('net');
 const client = new net.Socket();
 
 client.connect(6379, '127.0.0.1', () => {
-    console.log('Connected to Redis Lite server');
+    console.log('Connected to Simple Redis Server');
 
-    // Send commands to the server
-    client.write(serializeRequest('Hello World'));
+    // Send SET command to set a key-value pair
+    client.write('SET myKey Hello\r\n');
 
-    // You can send more commands here, e.g., client.write(serializeRequest('GET key'));
-
-    // End the connection
-    client.end();
+    // Send GET command to retrieve the value of a key
+   client.write('GET myKey\r\n');
 });
 
 client.on('data', (data) => {
     const response = data.toString();
     console.log('Server Response:', response);
+    client.end(); // Close the connection after receiving the response
 });
 
 client.on('end', () => {
@@ -26,7 +25,3 @@ client.on('end', () => {
 client.on('error', (err) => {
     console.error(`Client socket error: ${err}`);
 });
-
-function serializeRequest(command) {
-    return `\$${command.length}\r\n${command}\r\n`;
-}

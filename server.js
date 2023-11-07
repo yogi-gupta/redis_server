@@ -1,12 +1,27 @@
 const net = require('net');
 
+const dataStore = {}; // A simple in-memory data store
+
 const server = net.createServer((client) => {
     console.log('Client connected');
 
     client.on('data', (data) => {
-        const request = data.toString();
-        const response = processRequest(request);
-        client.write(response);
+        const request = data.toString().trim();
+        const [command, key, value] = request.split(' ');
+
+        if (command === 'SET') {
+            dataStore[key] = value;
+            client.write('OK\r\n');
+        } else if (command === 'GET') {
+            const storedValue = dataStore[key];
+            if (storedValue) {
+                client.write(`${storedValue}\r\n`);
+            } else {
+                client.write('(nil)\r\n');
+            }
+        } else {
+            client.write('-Error: Unsupported command\r\n');
+        }
     });
 
     client.on('end', () => {
@@ -19,28 +34,5 @@ const server = net.createServer((client) => {
 });
 
 server.listen(6379, '0.0.0.0', () => {
-    console.log('Echo Server is running on port 6379');
+    console.log('Simple Redis Server is running on port 6379');
 });
-
-function processRequest(request) {
-    const deserializedRequest = deserializeRESP(request);
-
-    if (deserializedRequest) {
-        return serializeRESP(deserializedRequest);
-    } else {
-        return serializeRESP('-Error: Unsupported command\r\n');
-    }
-}
-
-function deserializeRESP(request) {
-    if (request.startsWith('$')) {
-        const dataLength = parseInt(request.substring(1, request.indexOf('\r\n')));
-        return request.substring(request.indexOf('\r\n') + 2, request.indexOf('\r\n') + 2 + dataLength);
-    } else {
-        return request;
-    }
-}
-
-function serializeRESP(response) {
-    return '$' + response.length + '\r\n' + response + '\r\n';
-}
